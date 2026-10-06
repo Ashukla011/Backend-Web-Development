@@ -23,8 +23,35 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // const jwt = require('jsonwebtoken');  ← uncomment when you start implementing
-
+const jwt = require("jsonwebtoken");
 module.exports = function requireAuth(req, res, next) {
   // Replace this with your implementation:
-  next();
+  const authorization = req.headers.authorization ?? "";
+  const match = /^Bearer ([^\s]+)$/i.exec(authorization);
+  const token = match ? match[1] : null;
+
+  if (token === null) {
+    return res.status(401).json({
+      error: {
+        code: "AUTH_REQUIRED",
+        message: "Authentication required",
+      },
+    });
+  }
+
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
+   
+  } catch (error) {
+    return res.status(401).json({
+      error: {
+        code: "AUTH_REQUIRED",
+        message: "Authentication required",
+      },
+    });
+  }
+
+  return next();
 };
