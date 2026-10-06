@@ -23,4 +23,22 @@
 //   const rateLimit = require('express-rate-limit');
 //   module.exports = rateLimit({ ...options });
 
-module.exports = (req, res, next) => next(); // TODO: replace this stub
+const rateLimit = require('express-rate-limit');
+module.exports = rateLimit({
+  windowMs: 15 * 60 * 1000,      // 15 minutes
+  max: 5,                        // 5 attempts per window per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,  // only failed attempts count
+  handler: (req, res) => {
+    // set a Retry-After header, then respond 429
+    const retryAfterSeconds = Math.ceil((req.rateLimit.resetTime - Date.now())/ 1000);
+    res.setHeader('Retry-After', retryAfterSeconds>0 ? retryAfterSeconds:1);
+    return res.status(429).json({
+        error:{
+            code:'Too_MANY_REQUESTS',
+            message: 'Too many failed login attempts from this IP. Please try again later.',
+        }
+    })
+  },
+});
