@@ -46,8 +46,47 @@ const { users, nextId } = require('../data');
 // ───────────────────────────────────────────────────────────────────────────────
 async function verifyCallback(accessToken, refreshToken, profile, done) {
   // Replace this stub with your implementation.
+  try{
+    const email = profile.emails && profile.emails[0]? profile.emails[0].value : null;
+    const name = profile.displayName; 
+
+    // Scenario A
+    const returningUser = users.find((u) => u.googleId === profile.id);
+    if(returningUser){
+      return done(null, returningUser);
+    }
+
+    // Scenario B 
+    const existingLocalUser = users.find((u) => u.email === email);
+    if(existingLocalUser){
+      if(!profile._josn || prifile._json.email_verified !== true){
+          return done(null, false);
+      }
+      existingLocalUser.googleId = profile.id;
+      return done(null, existingLocalUser);
+
+    
+    }
+    // Scenario c 
+
+    const newUser ={
+      id: nextId(),
+      googleId: profile.id,
+      email,
+      name,
+      role: 'member',
+
+    };
+    users.push(newUser);
+    return done(null, newUser);
+  
+  }catch(err){
+    return done(err)
+  }
   return done(null, false);
 }
+
+
 
 passport.use(
   new GoogleStrategy(
