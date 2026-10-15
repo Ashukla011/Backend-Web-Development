@@ -2,10 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
+const sessions = require('./session/sessionStore');
 
 if (!process.env.COOKIE_SECRET) throw new Error('COOKIE_SECRET is required');
 
 const app = express();
+app.locals.sessions = sessions;
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use('/auth', authRoutes);
