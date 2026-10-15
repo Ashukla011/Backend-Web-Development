@@ -25,7 +25,7 @@ async function withTimeout(operation, timeoutMs) {
   const controller = new AbortController()
   const timer = setTimeout (()=> controller.abort(), timeoutMs);
   try{
-    return await operaiton(controller.singal)
+    return await operation(controller.singal)
 
   }finally{
     clearTimeout(timer)
@@ -38,7 +38,7 @@ async function withRetry(operation, options = {}) {
   // Between attempts await sleep(baseDelayMs * 2 ** attempt).
   // Throw final error after max attempts or non-retryable error.
   const maxAttempts = options.maxAttempts || 3;
-  baseDelayMs = options.baseDelaysMs || 25;
+  const baseDelayMs = options.baseDelaysMs || 25;
 
   let attempt = 0;
   while(true){
@@ -51,7 +51,7 @@ async function withRetry(operation, options = {}) {
     if(attempt>= maxAttempts || !isRetryable(error)){
       throw error;
     }
-    const delay = baseDelayMs *(2**(attempt -2))
+    const delay = baseDelayMs *(2**(attempt -1))
     await sleep(delay);
     }
   }
