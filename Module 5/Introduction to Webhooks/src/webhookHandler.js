@@ -21,13 +21,73 @@
 //     Then call handleEvent(event) inside setImmediate(() => { ... })
 
 const { handleEvent } = require('./eventHandlers');
-
+const crypto = require("crypto");
 // TODO: implement
 
 const _processedIds = new Set();
 
 async function handleWebhook(req, res) {
-  res.status(501).json({ error: 'not implemented' });
-}
+  const signatureHeader = req.headers['x-webhook-signature'];
+  if (!signatureHeader || !signatureHeader.startsWith('sha256=')) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  const receivedHex = signatureHeader.slice(7);
+ let bodyBuffer;
+  try {
+    if (Buffer.isBuffer(req.body)) {
+      bodyBuffer = req.body;
+    } else if (typeof req.body === 'string') {
+      bodyBuffer = Buffer.from(req.body);
+    } else if (req.body && typeof req.body === 'object') {
+      bodyBuffer = Buffer.from(JSON.stringify(req.body));
+    } else {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
 
+  let expectedHex;
+  try {
+    expectedHex = crypto
+      .createHmac('sha256', process.env.WEBHOOK_SECRET || '')
+      .update(bodyBuffer)
+      .digest('hex');
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  try {
+    const receivedBuffer = Buffer.from(receivedHex, 'hex');
+    const expectedBuffer = Buffer.from(expectedHex, 'hex');
+
+    if (
+      receivedBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(receivedBuffer, expectedBuffer)
+    ) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  let event;
+  try {
+    event = JSON.parse(bodyBuffer);
+  } catch (err) {
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+
+  if (_processedIds.has(event.id)) {
+    return res.status(200).json({ status: 'already_processed' });
+  }
+
+  _processedIds.add(event.id);
+
+  res.status(200).json({ status: 'received' });
+
+  setImmediate(() => {
+    handleEvent(event);
+  });
+}
 module.exports = { handleWebhook, _processedIds };

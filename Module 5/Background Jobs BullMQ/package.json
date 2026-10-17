@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "Background Jobs with BullMQ, email OTP verification",
   "main": "src/app.js",
-  "scripts": {
-    "start": "node src/app.js",
-    "test": "node tests/run.js"
-  },
   "dependencies": {
     "bullmq": "^5.1.1",
     "dotenv": "^16.4.1",

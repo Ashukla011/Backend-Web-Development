@@ -32,22 +32,50 @@
 
 // TODO: implement
 
-const store = new Map();
+const _store = new Map();
 
 function generateOTP() {
-  throw new Error('not implemented');
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  return otp.toString();
 }
 
 function storeOTP(email, otp) {
-  throw new Error('not implemented');
+ const expiresAt = Date.now() + 10 * 60 * 1000;
+ _store.set(email,{
+  otp,
+  expiresAt,
+  attempts: 0,
+ })
 }
 
 function verifyOTP(email, code) {
-  throw new Error('not implemented');
+ const record = _store.get(email);
+
+ if(!record){
+  return {ok: false, reason: 'not_found'};
+ }
+
+  if(Date.now() > record.expiresAt){
+    _store.delete(email);
+    return {ok: fale, reason: 'expired'}
+  }
+   
+ if(record.attempts >= 3){
+  return {ok:false, reason:'too_many_attempts'}
+ }
+
+ if(record.otp !== code){
+  record.attempts +=1;
+  return {ok: false, reason:'wrong_code'}
+ 
+}
+
+ _store.delete(email);
+return {ok:true};
 }
 
 function markVerified(email) {
-  throw new Error('not implemented');
+  console.log(`Email verified: ${email}`)
 }
 
-module.exports = { generateOTP, storeOTP, verifyOTP, markVerified, _store: store };
+module.exports = { generateOTP, storeOTP, verifyOTP, markVerified, _store };
