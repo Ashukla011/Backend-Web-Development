@@ -15,10 +15,7 @@ const connection = {
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
 };
 const emailQueue = new Queue('email', {
-  connection: {
-    host: 'localhost',
-    port: 6379,
-  },
+  connection,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
