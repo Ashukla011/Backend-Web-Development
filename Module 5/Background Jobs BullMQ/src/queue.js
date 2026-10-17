@@ -14,15 +14,21 @@ const connection = {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
 };
-const emailQueue = new Queue("email", {
-    connection,
-    defaultJobOptions:{
-        attempts:3,
-        backoff:{
-            type: 'exponential',
-            delay:1000,
-        },
-    }
-
+const emailQueue = new Queue('email-queue', {
+  connection: {
+    host: 'localhost',
+    port: 6379,
+  },
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 1000, 
+    },
+    removeOnComplete: true,
+    removeOnFail: false,
+  },
 });
+
+
 module.exports = { emailQueue, connection };

@@ -52,7 +52,7 @@ function verifyOTP(email, code) {
  const record = _store.get(email);
 
  if(!record){
-  return {ok: false, reason: 'not_found'};
+  return {ok: false, reason: 'not_found'}
  }
 
   if(Date.now() > record.expiresAt){
