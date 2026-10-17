@@ -40,7 +40,7 @@ function generateOTP() {
 }
 
 function storeOTP(email, otp) {
- const expiresAt = Date.now() +10*60*1000;
+ const expiresAt = Date.now() + 10 * 60 * 1000;
  _store.set(email,{
   otp,
   expiresAt,
@@ -54,18 +54,19 @@ function verifyOTP(email, code) {
  if(!record){
   return {ok: false, reason: 'not_found'};
  }
+
   if(Date.now() > record.expiresAt){
     _store.delete(email);
     return {ok: fale, reason: 'expired'}
   }
    
  if(record.attempts >= 3){
-  return {ok:false, reson:'too_many_attempts'}
+  return {ok:false, reason:'too_many_attempts'}
  }
 
  if(record.otp !== code){
   record.attempts +=1;
-  return {ok: false, reson:'wrong_code'}
+  return {ok: false, reason:'wrong_code'}
  
 }
 
