@@ -36,7 +36,7 @@ const worker = new Worker(
 );
 
 worker.on('completed', (job)=>{
-    console.log(`Job ${job.id} completed successfully`);
+    console.log(`Job ${job.id} completed successfully`)
 
 });
 
