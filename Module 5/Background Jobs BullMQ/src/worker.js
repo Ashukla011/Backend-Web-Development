@@ -11,3 +11,43 @@
 //     Returning without throwing → job completed.
 
 // TODO: implement
+const { Worker } = require('bullmq');
+const { connection } = require('./queue');
+const transporter = require('./email');
+
+const worker = new Worker(
+  'email',
+  async (job) => {
+    if (job.name === 'otp') {
+      const { email, otp } = job.data;
+      
+      await transporter.sendMail({
+        from: '"Auth Support" <support@example.com>',
+        to: email,
+        subject: 'Your Verification Code',
+        text: `Your verification code is: ${otp}. It expires in 10 minutes.`,
+        html: `<p>Your verification code is: <b>${otp}</b>. It expires in 10 minutes.</p>`,
+      });
+    }
+  },
+  {
+    connection,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 1000,
+      },
+    },
+  }
+);
+
+worker.on('completed', (job) => {
+  console.log(`Job completed: ${job.id}`);
+});
+
+worker.on('failed', (job, err) => {
+  console.log(`Job failed: ${job.id} with error: ${err.message}`);
+});
+
+module.exports = worker;

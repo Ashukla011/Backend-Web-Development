@@ -8,7 +8,14 @@
 //                       process.env.REDIS_PORT (default 6379)
 
 // TODO: implement
-const emailQueue = null;
-const connection = null;
+const { Queue } = require('bullmq');
+require('dotenv').config();
+
+const connection = {
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
+};
+
+const emailQueue = new Queue('email', { connection });
 
 module.exports = { emailQueue, connection };
