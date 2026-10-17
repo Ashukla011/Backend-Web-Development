@@ -57,7 +57,7 @@ function verifyOTP(email, code) {
 
   if(Date.now() > record.expiresAt){
     _store.delete(email);
-    return {ok: fale, reason: 'expired'}
+    return {ok: false, reason: 'expired'}
   }
    
  if(record.attempts >= 3){
